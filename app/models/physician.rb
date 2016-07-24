@@ -7,10 +7,10 @@ class Physician < ActiveRecord::Base
 
   validates :physician_phone_number, format: { with: /\d{3}-\d{3}-\d{4}/, 
     message: "bad format" }
-	@resluts = []
+	@results = [] 
   def result_analytes
-  	self.specimens.resluts.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.each do |item|
-  		@resluts.push(item.analyte_name);
+  	self.specimens.results.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.each do |item|
+  		@results.push(item.analyte_name);
   	end
   end
 end
