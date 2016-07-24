@@ -2,7 +2,7 @@
 # physician_type:string
 class Physician < ActiveRecord::Base
   has_many :specimens
-  belongs_to :hospital
+  has_many :hospital
   has_many :patients
 
   validates :physician_phone_number, format: { with: /\d{3}-\d{3}-\d{4}/, 

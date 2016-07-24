@@ -1,0 +1,83 @@
+1. Draw an ERD for the models above.
+    
+    The ERD can be found attached to the email. The attached file name is MDLabs_erd.png
+_______________________________________________
+2. Write an ActiveRecord query to grab all analyte names for a physician from results reported in the first quarter of 2014. You can add code to models (no adding/removing DB attributes) as you see fit. Place the code in a method titled 'result_analytes' in the Physician class.
+
+    Below is the altered Physician class. I start at the current physician (self), and traverse the relationships until I get to results. At results is where I select the date range (quarter 1 of 2014). I then get the name from all analytes
+
+    # other attributes: physician_name:string,physician_phone_number:string,
+    # physician_type:string
+    class Physician < ActiveRecord::Base
+          has_many :specimens
+          belongs_to :hospital
+          has_many :patients
+
+          validates :physician_phone_number, format: { with: /\d{3}-\d{3}-\d{4}/,
+            message: "bad format" }
+
+          def result_analytes
+              @resluts_q1_2014 = self.specimens.resluts.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.analyte_name
+          end
+    end
+_______________________________________________
+
+3. Write an ActiveRecord query to get all results reported by physicians in the 775 area code. Place the code in a method titled 'reno_results' in the Result class.
+
+    This one had the trick of two phone number to chose from. If I had used patient phone number, it would create a scenario where a patient could live in the Reno area, but submit the specimen to another area.
+    
+    # other attributes: result_value:integer, reported_at:datetime
+    class Result < ActiveRecord::Base
+          belongs_to :specimens
+          belongs_to :analyte
+
+          def reno_results
+              @reno_results_return = physicians.where("physician_phone_number like?", "#{775}%").specimens.results
+          end
+    end
+
+_______________________________________________
+
+4. Hospitals want to limit the type of Analytes tested by their Physicians, so that physicians at that hospital can only order from a designated list of Analytes. Modify the schema to accommodate this. You can add/remove/modify models as you see fit.
+
+    I altered the ERD to solve this scenario. The file can be found attached to the email, named MDLabs_erd_analytes_limit.png. I created a new class called Analyte Result, and modified Analyte. Analyte only has the analyte name now. The hospital approves Analyte in a one to many relationship (Hospitals have many analytes). Analyte Result must inherit from the parent Analyte class. In this way, a physician cannot order an analyte test that does not exist at that hospital.
+
+_______________________________________________
+
+5. Physicians are now allowed to work at multiple hospitals, and can designate a single hospital as their primary hospital. Write an ActiveRecord migration that would add this functionality without losing any current data. If a physician belongs to a hospital before the migration, make that hospital their primary hospital.
+
+    First I had to add a new column to physician for primary hospital, and move the current assigned hospital to it (in the form of a foreign key).
+
+    Class PhysicianPrimaryHospital < ActiveRecord::Migration
+        def change
+            change_table :physicians do |t|
+                  t.integer :primary_hospital
+                  add_foreign_key :primary_hospital, :hospitals
+            end
+        end
+    end
+
+    Next, I had to change the relationship of physicians and hospitals. Instead of a one to many, there must be a many to many relationship
+
+    # other attributes: physician_name:string, physician_phone_number:string,
+    # physician_type:string
+    class Physician < ActiveRecord::Base
+          has_many :specimens
+          #Changed belongs_to to has_many
+          has_many :hospital
+          has_many :patients
+
+          validates :physician_phone_number, format: { with: /\d{3}-\d{3}-\d{4}/,
+            message: "bad format" }
+
+          def result_analytes
+              @resluts = self.specimens.resluts.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.analyte_name
+          end
+    end
+
+_______________________________________________
+
+6. What do you dislike the most about Ruby/RoR?
+
+    I haven't work a lot on RoR, but I have stumbled upon two gripes. First, everyone knows that RoR is slow. This creates a disadvantage for scaling a project. Second, the documentation leave much to be desired. Don't get me wrong, RoR does have documentation for all of it's features. But I find myself digging a lot more than I would for other languages
+
