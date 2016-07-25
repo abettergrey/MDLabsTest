@@ -6,9 +6,9 @@ class Result < ActiveRecord::Base
   def reno_results
   	@reno_results_return = []
   	physicians.where("physician_phone_number like?", "#{775}%").each do |physician_item|
-  		item.specimens.each do |specimen_item|
-  			item.results.each do |resutls_item|
-				reno_results_return.push(item)
+  		physician_item.specimens.each do |specimen_item|
+  			specimen_item.results.each do |resutls_item|
+				reno_results_return.push(resutls_item)
 			end
   		end
   	end

@@ -1,7 +1,7 @@
 # other attributes: physician_name:string, physician_phone_number:string, 
 # physician_type:string
 class Physician < ActiveRecord::Base
-  has_many :specimens
+  has_many :specimans
   has_many :hospital
   has_many :patients
 

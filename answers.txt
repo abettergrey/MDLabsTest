@@ -15,10 +15,10 @@ _______________________________________________
 
   		validates :physician_phone_number, format: { with: /\d{3}-\d{3}-\d{4}/, 
     		message: "bad format" }
-		@resluts = []
+		@results = []
   		def result_analytes
-  			self.specimens.resluts.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.each do |item|
-  				@resluts.push(item.analyte_name);
+  			self.specimens.results.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.each do |item|
+  				@results.push(item.analyte_name);
   			end
   		end
 	end
@@ -28,15 +28,23 @@ _______________________________________________
 
     This one had the trick of two phone number to chose from. If I had used patient phone number, it would create a scenario where a patient could live in the Reno area, but submit the specimen to another area.
     
-    # other attributes: result_value:integer, reported_at:datetime
-    class Result < ActiveRecord::Base
-          belongs_to :specimens
-          belongs_to :analyte
+	# other attributes: result_value:integer, reported_at:datetime
+	class Result < ActiveRecord::Base
+  		belongs_to :specimens
+  		belongs_to :analyte
 
-          def reno_results
-              @reno_results_return = physicians.where("physician_phone_number like?", "#{775}%").specimens.results
-          end
-    end
+  		def reno_results
+  			@reno_results_return = []
+  			physicians.where("physician_phone_number like?", "#{775}%").each do |physician_item|
+  				physician_item.specimens.each do |specimen_item|
+  					specimen_item.results.each do |resutls_item|
+						reno_results_return.push(resutls_item)
+					end
+  				end
+  			end
+  		end
+	end
+
 
 _______________________________________________
 
@@ -61,25 +69,27 @@ _______________________________________________
 
     Next, I had to change the relationship of physicians and hospitals. Instead of a one to many, there must be a many to many relationship
 
-    # other attributes: physician_name:string, physician_phone_number:string,
-    # physician_type:string
-    class Physician < ActiveRecord::Base
-          has_many :specimens
-          #Changed belongs_to to has_many
-          has_many :hospital
-          has_many :patients
+    # other attributes: physician_name:string, physician_phone_number:string, 
+	# physician_type:string
+	class Physician < ActiveRecord::Base
+  		has_many :specimens
+  		has_many :hospital
+  		has_many :patients
 
-          validates :physician_phone_number, format: { with: /\d{3}-\d{3}-\d{4}/,
-            message: "bad format" }
-
-          def result_analytes
-              @resluts = self.specimens.resluts.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.analyte_name
-          end
-    end
+  		validates :physician_phone_number, format: { with: /\d{3}-\d{3}-\d{4}/, 
+    		message: "bad format" }
+		@results = []
+  		def result_analytes
+  			self.specimens.results.where("reported_at >= 2014-01-01 AND reported_at < 2014-04-01").analytes.each do |item|
+  				@results.push(item.analyte_name);
+  			end
+  		end
+	end
 
 _______________________________________________
 
 6. What do you dislike the most about Ruby/RoR?
 
-    I haven't work a lot on RoR, but I have stumbled upon two gripes. First, everyone knows that RoR is slow. This creates a disadvantage for scaling a project. Second, the documentation leave much to be desired. Don't get me wrong, RoR does have documentation for all of it's features. But I find myself digging a lot more than I would for other languages
+    I haven't work a lot on RoR, but I have stumbled upon two gripes. First, everyone knows that RoR is slow. This creates a disadvantage for scaling a project. Second, the documentation leave much to be desired. Don't get me wrong, RoR does have documentation for all of it's features. But I find myself digging a lot more than I would for other languages.
+    There also seems to be an inside joke about chunky bacon that I don't get.
 
